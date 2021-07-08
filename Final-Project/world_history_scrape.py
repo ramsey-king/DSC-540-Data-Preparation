@@ -4,7 +4,7 @@ import sys
 import pandas as pd
 import numpy as np
 
-year = 2012
+year = 2012 # CHANGE BACK TO 1942 WHEN READY TO TURN IN
 page_num = 1
 url = 'https://worldhistoryproject.org/' + str(year) + '/page/' + str(page_num)
 webpage_contents = requests.get(url).text
@@ -37,12 +37,15 @@ def get_info():
 
 
 while True:
-    print(url)  # here for now to make sure things work.
-    if year == 2013:
-        # print(len(dates), len(title), len(headlines))
+    print(url)  # here for now to make sure things work. WHEN READY TO TURN IN DELETE
+    if year == 2013: # 2013 is the last year of the world history dataset        
         data = {'Date': dates, 'Title': title, 'Headline': headlines}
         world_history_df = pd.DataFrame(data)
-        # print(world_history_df.head())
+        world_history_df['Headline'] = world_history_df['Headline'].str.replace('... ReadÂ more', '')
+        world_history_df['Headline'] = world_history_df['Headline'].str.strip()
+        world_history_df['Title'] = world_history_df['Title'].str.strip()
+
+        print(world_history_df.head())
         # world_history_df.to_csv('world_history_project.csv') PUT BACK IN WHEN READY TO TURN IN PROJECT
         sys.exit()
 
@@ -70,4 +73,7 @@ Transformations needed to make:
 1.  Format all the dates into one type.  If a date has date to date, remove the second date.
 2.  Strip whitespace from Title and Headline columns
 3.  Replace or create headers was done in the Python code. 
+4.  Remove the '... ReadÂ more' from each value in the Headline column
+5.  
 '''
+
