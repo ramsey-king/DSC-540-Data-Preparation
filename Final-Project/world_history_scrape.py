@@ -2,23 +2,39 @@ from bs4 import BeautifulSoup
 import requests
 import sys
 import pandas as pd
-import numpy as np
+import datetime as dt
 
-year = 2012 # CHANGE BACK TO 1942 WHEN READY TO TURN IN
+#  import numpy as np
+
+'''
+Transformations needed to make:  
+1.  Create new date column (type str) converting datetime column to more readable format.
+https://www.journaldev.com/23365/python-string-to-datetime-strptime
+2.  Strip whitespace from Title and Headline columns (DONE)
+3.  Replace or create headers was done in the Python code.  (DONE)
+4.  Remove the '... ReadÂ more' from each value in the Headline column (DONE)
+5.  Create a year column to be used to make a relationship between the LDS General Conference Corpus and the World 
+    History Project. (DONE)
+'''
+
+
+year = 2012  # CHANGE BACK TO 1942 WHEN READY TO TURN IN
 page_num = 1
 url = 'https://worldhistoryproject.org/' + str(year) + '/page/' + str(page_num)
 webpage_contents = requests.get(url).text
 response = requests.get(url)
 soup = BeautifulSoup(webpage_contents, "lxml")
 
-dates, title, headlines = [], [], []
+year_column, dates, date_string, title, headlines = [], [], [], [], []
 
 
 def get_dates():
     for li_tag in soup.find_all('li', {'class': 'media event'}):
         time_info = li_tag.find('time')
-        # dates.append(time_info.attrs['datetime'])
-        dates.append(time_info.text.strip())
+        dates.append(time_info.attrs['datetime'])
+        #date_string.append(time_info.attrs['datetime'].dt.strftime('%b %d, %Y'))
+        # dates.append(time_info.text.strip())
+        year_column.append(year)
 
 
 def get_titles():
@@ -36,16 +52,20 @@ def get_info():
             headlines.append('NO HEADLINE DATA ENTERED')
 
 
+def make_dataset():
+    data = {'Year': year_column, 'Date': dates, 'Title': title, 'Headline': headlines}
+    df = pd.DataFrame(data)
+    df['Headline'] = df['Headline'].str.replace('... ReadÂ more', '')
+    df['Headline'] = df['Headline'].str.strip()
+    df['Title'] = df['Title'].str.strip()
+    return df
+
+
 while True:
     print(url)  # here for now to make sure things work. WHEN READY TO TURN IN DELETE
-    if year == 2013: # 2013 is the last year of the world history dataset        
-        data = {'Date': dates, 'Title': title, 'Headline': headlines}
-        world_history_df = pd.DataFrame(data)
-        world_history_df['Headline'] = world_history_df['Headline'].str.replace('... ReadÂ more', '')
-        world_history_df['Headline'] = world_history_df['Headline'].str.strip()
-        world_history_df['Title'] = world_history_df['Title'].str.strip()
-
-        print(world_history_df.head())
+    if year == 2013:  # 2013 is the last year of the world history dataset
+        world_history_df = make_dataset()
+        print(world_history_df['Date'])
         # world_history_df.to_csv('world_history_project.csv') PUT BACK IN WHEN READY TO TURN IN PROJECT
         sys.exit()
 
@@ -67,13 +87,4 @@ while True:
 
     else:
         continue
-
-'''
-Transformations needed to make:  
-1.  Format all the dates into one type.  If a date has date to date, remove the second date.
-2.  Strip whitespace from Title and Headline columns
-3.  Replace or create headers was done in the Python code. 
-4.  Remove the '... ReadÂ more' from each value in the Headline column
-5.  
-'''
 
