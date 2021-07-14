@@ -1,4 +1,3 @@
-from bs4 import BeautifulSoup
 import requests
 import sys
 import pandas as pd
@@ -26,38 +25,35 @@ To find information by pulling a div id:
 https://stackoverflow.com/questions/2136267/beautiful-soup-and-extracting-a-div-and-its-contents-by-id
 '''
 # https://scriptures.byu.edu/#:t2
-talk_num = 1
+talk_num = 2
 url = 'https://scriptures.byu.edu/#:t' + str(talk_num)
-webpage_contents = requests.get(url).text
-repsonse = requests.get(url)
-soup = BeautifulSoup(webpage_contents, 'lxml')
 
-path = "/home/ramsey/Documents/chromedriver"
-driver = webdriver.Chrome(path)
+
+path_linux = "/home/ramsey/Documents/chromedriver"
+driver = webdriver.Chrome(path_linux)
 driver.get(url)
-print(driver.title)
+# print(driver.title)
+driver.implicitly_wait(10)
 
-search = driver.find_element_by_id('centercolumn')
-# print(search.text)
+# search = driver.find_element_by_id('centercolumn')
+
 try:
-    main = WebDriverWait(driver, 10).until(
+    webpage = WebDriverWait(driver, 10).until(
         EC.presence_of_element_located((By.ID, "centercolumn"))
     )
 
-    # print(main.text)
+    # print(webpage.text)
+    talk_header_info = webpage.find_elements_by_class_name('gchead')
+    for element in talk_header_info:
+        print(element.text)
+
+    print(webpage.find_element_by_class_name('gctitle').text)
+
+    paragraphs = webpage.find_elements_by_class_name("gcbody")
+    for paragraph in paragraphs:
+        print(paragraph.text)
 finally:
     driver.quit()
 
-# for para in soup.find_all("p"):
-#     print(para.get_text())
-
-def get_contents(main_tag, main_class, info_tag, info_class):
-    info_list = []
-    for tag in soup.find_all(main_tag, {'class': main_class}):
-        info = tag.find(info_tag, {'class': info_class})
-        info_list.append(info.text.strip())
-    return info_list
 
 # if __name__ == '__main__':
-#     test_list = get_contents('div', 'gchead', 'p', 'gcspeaker')
-#     print(test_list)
