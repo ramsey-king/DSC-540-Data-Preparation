@@ -3,6 +3,7 @@ import sys
 import pandas as pd
 import datetime as dt
 from selenium import webdriver
+import selenium
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -26,15 +27,15 @@ To find information by pulling a div id:
 https://stackoverflow.com/questions/2136267/beautiful-soup-and-extracting-a-div-and-its-contents-by-id
 '''
 # https://scriptures.byu.edu/#:t2
-talk_num = 2
+talk_num = 1
 url = 'https://scriptures.byu.edu/#:t' + str(talk_num)
 
 
-path_linux = "/home/ramsey/Documents/chromedriver"
-driver = webdriver.Chrome(path_linux)
+# path_linux = "/home/ramsey/Documents/chromedriver"
+# driver = webdriver.Chrome(path_linux)
 
-# path_pc = 'C:\\Users\\Ramsey\\Downloads\\chromedriver.exe'
-# driver = webdriver.Chrome(path_pc)
+path_pc = 'C:\\Users\\Ramsey\\Downloads\\chromedriver.exe'
+driver = webdriver.Chrome(path_pc)
 driver.get(url)
 # print(driver.title)
 
@@ -50,12 +51,30 @@ def get_talk():
 
         # print(webpage.text)
         time.sleep(1.5)
-        talk_header_info = webpage.find_elements_by_class_name('gchead')
-        for element in talk_header_info:
-            talk_title.append(webpage.find_element_by_class_name('gctitle').text)
-            speaker.append(webpage.find_element_by_class_name('gcspeaker').text)
-            position.append(webpage.find_element_by_class_name('gcspkpos').text)
-            bibliography.append(webpage.find_element_by_class_name('gcbib').text)    
+        talk_header_info = webpage.find_elements_by_class_name('gchead')        
+        # talk_header_info_parse = talk_header_info[0].text.splitlines()
+        # print(talk_header_info_parse)
+        for element in talk_header_info:            
+            try:
+                talk_title.append(webpage.find_element_by_class_name('gctitle').text)
+            except selenium.common.exceptions.NoSuchElementException:
+                position.append("NO DATA FOUND")
+
+            try:
+                speaker.append(webpage.find_element_by_class_name('gcspeaker').text)
+            except selenium.common.exceptions.NoSuchElementException:
+                position.append("NO DATA FOUND")
+
+            try:
+                position.append(webpage.find_element_by_class_name('gcspkpos').text)
+            except selenium.common.exceptions.NoSuchElementException:
+                position.append("NO DATA FOUND")
+
+            try:
+                bibliography.append(webpage.find_element_by_class_name('gcbib').text) 
+            except selenium.common.exceptions.NoSuchElementException:
+                position.append("NO DATA FOUND")
+            
 
         paragraphs = webpage.find_elements_by_class_name("gcbody")
         for paragraph in paragraphs:
@@ -74,7 +93,7 @@ def make_dataset():
 
 while True:
     print(url)  # here for now to make sure things work. WHEN READY TO TURN IN DELETE
-    if talk_num == 721:  # it appears that this pattern only works for the first 720.  There are 2150
+    if talk_num == 720:  # it appears that this pattern only works for the first 720.  There are 2150
         # t720 = Hugh B Brown, October 1967, The Profile of a Prophet
         gc_df = make_dataset()
         gc_df.to_csv('gc.csv')
@@ -84,8 +103,8 @@ while True:
     
     talk_num += 1
     url = 'https://scriptures.byu.edu/#:t' + str(talk_num)
-    # driver = webdriver.Chrome(path_pc)
-    driver = webdriver.Chrome(path_linux)
+    driver = webdriver.Chrome(path_pc)
+    # driver = webdriver.Chrome(path_linux)
     driver.get(url)
     get_talk()
 
