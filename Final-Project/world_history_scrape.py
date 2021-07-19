@@ -9,7 +9,6 @@ import datetime as dt
 '''
 Transformations needed to make:  
 1.  Create new date column (type str) converting datetime column to more readable format.
-https://www.journaldev.com/23365/python-string-to-datetime-strptime
 2.  Strip whitespace from Title and Headline columns (DONE)
 3.  Replace or create headers was done in the Python code.  (DONE)
 4.  Remove the '... ReadÂ more' from each value in the Headline column (DONE)
@@ -31,9 +30,7 @@ year_column, dates, date_string, title, headlines = [], [], [], [], []
 def get_dates():
     for li_tag in soup.find_all('li', {'class': 'media event'}):
         time_info = li_tag.find('time')
-        dates.append(time_info.attrs['datetime'])
-        #date_string.append(time_info.attrs['datetime'].dt.strftime('%b %d, %Y'))
-        # dates.append(time_info.text.strip())
+        dates.append(time_info.attrs['datetime'])        
         year_column.append(year)
 
 
