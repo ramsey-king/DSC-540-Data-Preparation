@@ -1,5 +1,8 @@
+from requests.api import get
 import twitter
-import pandas as pd
+import matplotlib.pyplot as plt
+import numpy as np
+
 api = twitter.Api(consumer_key='D8KM23T3iFpwLO8OgQihpSMAX',
     consumer_secret='HEkmbBUDVtZLTuWq2guji0IRnwQmjHLCI2IJtgH7ZSdT3ju6LW',
     access_token_key='1419712533322153985-QjB21Rd8UThAzMFHngjRp7iYaoHZet',
@@ -7,19 +10,85 @@ api = twitter.Api(consumer_key='D8KM23T3iFpwLO8OgQihpSMAX',
 
 # print(api.VerifyCredentials())
 
-# Website to Twitter tutorial
+# Website to Twitter tutorial - DELETE THIS WHEN READY TO TURN IN
 # 'https://www.sitepoint.com/how-to-create-a-twitter-app-and-api-interface-via-python/'
 
-bellevue_search = api.GetSearch(term='(%23bellevueuniversity)', since='2000-01-01', count=1000)
-bellevue_search += api.GetSearch(term='Bellevue University', since='2000-01-01', count=1000)
-# print(len(bellevue_search))
-bell_dict = {'bellevue':bellevue_search}
-df = pd.DataFrame(bell_dict)
-df.to_excel('bellevue.xlsx')
 
-data_science_search = api.GetSearch(term='(%23datascience)', since='2000-01-01', count=1000)
-data_science_search += api.GetSearch(term='data science', since='2000-01-01', count=1000)
-# print(len(data_science_search))
-ds_dict = {'data science':data_science_search}
-df = pd.DataFrame(ds_dict)
-df.to_excel('ds.xlsx')
+def process_twitter_info(search_term):
+    hash_string = '(%23' + search_term.replace(" ", "") + ')'
+    api_pull = api.GetSearch(term=search_term)
+    api_pull += api.GetSearch(term=hash_string)
+    dict_to_parse = {'main_key': api_pull}
+    # Loop through all elements and convert them to dictionary objects
+    for i in range(len(dict_to_parse['main_key'])):
+        dict_to_parse['main_key'][i] = dict_to_parse['main_key'][i].AsDict()
+    
+    return dict_to_parse
+
+def get_hashtag_list(info_as_dict): # Use 'Bellevue University' and 'Data Science'
+    tag_list = []    
+    # puts all hashtags into a list (lowercase to eliminate duplicates)
+    for i in range(len(info_as_dict['main_key'])):
+        for j in range(len(info_as_dict['main_key'][i]['hashtags'])):
+            tag_list.append(",".join(list(info_as_dict['main_key'][i]['hashtags'][j].values())).lower())
+
+    return tag_list
+
+def make_bar_chart(bar_chart_data):
+    items, counts = np.unique(bar_chart_data, return_counts=True)
+    plt.bar(items, counts)
+    plt.xticks(rotation = 90)
+    plt.tight_layout()
+    plt.show()
+
+def scatter_plot_lists(twitter_search):
+    d = process_twitter_info(twitter_search)
+    favorite_count_list, hashtag_count_list = [], []    
+    
+    for i in range(len(d['main_key'])):
+        favorite_count_list.append(d['main_key'][i].get('favorite_count'))
+        hashtag_count_list.append(len(d['main_key'][i].get('hashtags')))
+    # change None's to 0's
+    conv = lambda i : i or 0
+    favorite_count_list = [conv(i) for i in favorite_count_list]
+    print(favorite_count_list, hashtag_count_list)
+    return favorite_count_list, hashtag_count_list
+    
+def make_scatter_plot(scatter_x, scatter_y):
+    plt.scatter(scatter_x, scatter_y)
+    plt.xlabel('Favorite Count')
+    plt.ylabel('Hashtag Count')
+    plt.title('Favorite Count vs. Hashtag Count')
+    plt.show()
+
+def make_pie_chart(chart_list):
+    b_items, b_counts = np.unique(chart_list, return_counts=True)
+    plt.pie(b_counts, labels=b_items)
+    plt.show()
+   
+
+if __name__ == '__main__':
+    
+    bellevue_list = process_twitter_info('Bellevue University')
+    tag_list = get_hashtag_list(bellevue_list)
+    make_bar_chart(tag_list)
+
+    x, y = scatter_plot_lists('Data Science')
+    make_scatter_plot(x, y)
+
+    make_pie_chart(tag_list)
+
+
+
+# THIS IS ONLY NEEDED IF I GET LOCKED OUT OF MY ACCOUNT AND NEED TO LOAD THE DATA FROM AN EXCEL FILE
+# df_bellevue = pd.DataFrame(bell_dict)
+# print(df_bellevue.head(10))
+# df_bellevue.to_excel('bellevue.xlsx')
+
+'''
+# ONLY USED IF I GET LOCKED OUT OF MY ACCOUNT AND NEED TO LOAD THE EXCEL TABLE
+df_ds = pd.DataFrame(ds_dict)
+# df_ds.to_excel('ds.xlsx')
+'''
+
+# https://stackoverflow.com/questions/48587997/matplotlib-pie-graph-with-all-other-categories/48589225
