@@ -1,4 +1,3 @@
-from requests.api import get
 import twitter
 import matplotlib.pyplot as plt
 import numpy as np
@@ -9,10 +8,6 @@ api = twitter.Api(consumer_key='D8KM23T3iFpwLO8OgQihpSMAX',
     access_token_secret='XN99oI69OKRgz7Dy4PkR0uc5Di9VxbcOq8hsceh98SJ5S')
 
 # print(api.VerifyCredentials())
-
-# Website to Twitter tutorial - DELETE THIS WHEN READY TO TURN IN
-# 'https://www.sitepoint.com/how-to-create-a-twitter-app-and-api-interface-via-python/'
-
 
 def process_twitter_info(search_term):
     hash_string = '(%23' + search_term.replace(" ", "") + ')'
@@ -51,7 +46,6 @@ def scatter_plot_lists(twitter_search):
     # change None's to 0's
     conv = lambda i : i or 0
     favorite_count_list = [conv(i) for i in favorite_count_list]
-    print(favorite_count_list, hashtag_count_list)
     return favorite_count_list, hashtag_count_list
     
 def make_scatter_plot(scatter_x, scatter_y):
@@ -64,6 +58,7 @@ def make_scatter_plot(scatter_x, scatter_y):
 def make_pie_chart(chart_list):
     b_items, b_counts = np.unique(chart_list, return_counts=True)
     plt.pie(b_counts, labels=b_items)
+    plt.title('Pie Chart of hashtags')
     plt.show()
    
 
@@ -77,18 +72,3 @@ if __name__ == '__main__':
     make_scatter_plot(x, y)
 
     make_pie_chart(tag_list)
-
-
-
-# THIS IS ONLY NEEDED IF I GET LOCKED OUT OF MY ACCOUNT AND NEED TO LOAD THE DATA FROM AN EXCEL FILE
-# df_bellevue = pd.DataFrame(bell_dict)
-# print(df_bellevue.head(10))
-# df_bellevue.to_excel('bellevue.xlsx')
-
-'''
-# ONLY USED IF I GET LOCKED OUT OF MY ACCOUNT AND NEED TO LOAD THE EXCEL TABLE
-df_ds = pd.DataFrame(ds_dict)
-# df_ds.to_excel('ds.xlsx')
-'''
-
-# https://stackoverflow.com/questions/48587997/matplotlib-pie-graph-with-all-other-categories/48589225
