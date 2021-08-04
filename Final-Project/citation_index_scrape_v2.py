@@ -20,7 +20,7 @@ selenium to click on the links and scrape the talk information
 First I will need to figure out how to go through the right window and gather all the talk data.
 '''
 
-url = 'https://scriptures.byu.edu/#::st&&1942&2021&g&n&5532@0$the'  # n&5532 is the entire list
+url = 'https://scriptures.byu.edu/#::st&&1961&2015&g&n&4037@0$the'  # n&5532 is the entire list
 
 path_linux = "/home/ramsey/Documents/chromedriver"
 driver = webdriver.Chrome(path_linux)
@@ -39,7 +39,7 @@ to get all the info into a list, and the second pass will be to parse the data a
 def get_list():
     try:
         # when running entire dataset (5532 elements), put 70 seconds as delay time
-        WebDriverWait(driver, 70).until(
+        WebDriverWait(driver, 60).until(
             EC.presence_of_element_located((By.CLASS_NAME, 'searchresults'))
         )
 
@@ -57,56 +57,47 @@ def get_list():
         Then I want to click on the next talk.
         And put that talk in a list, and so on..'''
         talk_list = []
-        time.sleep(1)
+        time.sleep(0.85)
         talks = driver.find_elements_by_class_name('grid')
         # print(len(talks))
         for talk in range(len(talks)):
             driver.find_elements_by_class_name('grid')[talk].click()
             time.sleep(1)
-            paragraphs = driver.find_elements_by_class_name('gcbody')
-            if not paragraphs:
-                paragraphs = driver.find_elements_by_class_name('primary-article')
-            if not paragraphs:
-                paragraphs = driver.find_elements_by_class_name('body-block')
-            for paragraph in paragraphs:
-                talk_list.append(paragraph.text)
+            try:
+                paragraphs = driver.find_elements_by_class_name('gcbody')
+                if not paragraphs:
+                    paragraphs = driver.find_elements_by_class_name('primary-article')
+                if not paragraphs:
+                    paragraphs = driver.find_elements_by_class_name('body-block')
+                if not paragraphs:
+                    paragraphs = driver.find_elements_by_id('primary')
+                for paragraph in paragraphs:
+                    talk_list.append(paragraph.text)
+                    print("talk list len:", len(talk_list), "gc list len:", len(gc_list))
+            except selenium.common.exceptions.StaleElementReferenceException:
+                talk_list.append("NO DATA FOUND")
         talk_list = [i for i in talk_list if i]
         # print(talk_list)
-        # print(len(gc_list))
+        print("talk list len:", len(talk_list), "gc list len:", len(gc_list))
         # print(talk_list)
         return gc_list, talk_list
     finally:
         driver.quit()
 
 
-'''
-def parse_components(list_to_parse):
-    parsed_df = pd.DataFrame(columns=['Title', 'Speaker', 'Conf_Session', 'Source'])
-    for i in range(len(list_to_parse)):
-        f = filter(None, re.split(" \((?!Sam\) Wong)", list_to_parse[i]))
-        filtered_list = []
-        for j in f:
-            filtered_list.append(j)
-        f2 = filter(None, re.split(",(?! Jr.)", filtered_list[1]))
+# Put the two csv's together to have one csv with the header info and the talk text
+def combine_csv(csv1, csv2):
+    pass
 
-        filtered_list_2 = []
-        for h in f2:
-            filtered_list_2.append(h)
-        filtered_list.pop()
-
-        for k in range(len(filtered_list_2)):
-            filtered_list.append(filtered_list_2[k])
-        parsed_df.loc[len(parsed_df)] = filtered_list
-        print(filtered_list)
-    return parsed_df
-    # return filtered_list
-    '''
 
 
 if __name__ == '__main__':
     the_list, the_talks = get_list()
-    the_dict = {'List': the_list, 'Talks': the_talks}
-    df = pd.DataFrame(the_dict)
-    df.to_csv('talk_info2.csv')
+    the_talk_info_dict = {'List': the_list}
+    the_talk_text_dict = {'Talks': the_talks}
+    df = pd.DataFrame(the_talk_info_dict)
+    df.to_csv('talk_info_dict.csv')
+    df = pd.DataFrame(the_talk_text_dict)
+    df.to_csv('the_talk_text_dict.csv')
     # final_df = parse_components(the_list)
     # final_df.to_csv('talk_info.csv')
