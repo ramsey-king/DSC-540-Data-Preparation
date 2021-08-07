@@ -22,12 +22,12 @@ First I will need to figure out how to go through the right window and gather al
 
 url = 'https://scriptures.byu.edu/#::st&&1961&2015&g&n&4037@0$the'  # n&5532 is the entire list
 
-path_linux = "/home/ramsey/Documents/chromedriver"
-driver = webdriver.Chrome(path_linux)
+# path_linux = "/home/ramsey/Documents/chromedriver"
+# driver = webdriver.Chrome(path_linux)
 
 # path_pc = 'C:\\Users\\Ramsey\\Downloads\\chromedriver.exe'
 # driver = webdriver.Chrome(path_pc)
-driver.get(url)
+# driver.get(url)
 
 '''
 I was able to find the url that will pull the entire list of talks containing the letter a from 1942 to 2021.  The first
@@ -87,17 +87,24 @@ def get_list():
 
 # Put the two csv's together to have one csv with the header info and the talk text
 def combine_csv(csv1, csv2):
-    pass
-
+    header_df = pd.read_csv(csv1)
+    info_df = pd.read_csv(csv2)
+    print('header:', header_df.columns, 'talks:', info_df.columns)
+    # header_df = header_df.merge(info_df, how='left')
+    header_df = header_df.join(info_df, lsuffix='Unnamed: 0', rsuffix='Unnamed: 0')
+    header_df.drop(columns=['Unnamed: 0Unnamed: 0', 'Unnamed: 0Unnamed: 0'], inplace=True)
+    print('header:', header_df.columns)
+    header_df.to_csv('all_talks.csv')
 
 
 if __name__ == '__main__':
-    the_list, the_talks = get_list()
-    the_talk_info_dict = {'List': the_list}
-    the_talk_text_dict = {'Talks': the_talks}
-    df = pd.DataFrame(the_talk_info_dict)
-    df.to_csv('talk_info_dict.csv')
-    df = pd.DataFrame(the_talk_text_dict)
-    df.to_csv('the_talk_text_dict.csv')
-    # final_df = parse_components(the_list)
-    # final_df.to_csv('talk_info.csv')
+    # the_list, the_talks = get_list()
+    # the_talk_info_dict = {'List': the_list}
+    # the_talk_text_dict = {'Talks': the_talks}
+    # df = pd.DataFrame(the_talk_info_dict)
+    # df.to_csv('talk_info_dict.csv')
+    # df = pd.DataFrame(the_talk_text_dict)
+    # df.to_csv('the_talk_text_dict.csv')
+
+    combine_csv('C:\\Users\\Ramsey\\VSCodeProjects\\DSC-540-Data-Preparation\\Final-Project\\talk_info_dict.csv', 
+                'C:\\Users\\Ramsey\\VSCodeProjects\\DSC-540-Data-Preparation\\Final-Project\\the_talk_text_dict.csv')
