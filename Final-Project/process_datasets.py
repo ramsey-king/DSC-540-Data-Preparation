@@ -4,8 +4,13 @@ import datetime as dt
 from better_profanity import profanity
 import re
 
+
 # Additional transfomrations to datasets for final project
-profanity.load_censor_words()
+def load_doctrine_and_covenants():
+    triple_combo_df = pd.read_json(
+        '/home/ramsey/PycharmProjects/DSC-540-Data-Preparation/Final-Project/lds-scriptures-json.txt'
+    )
+    print(triple_combo_df.info())
 
 
 def world_history_process():
@@ -76,8 +81,8 @@ def get_scripture_ref():
     scripture_regex = ''.join(elem for elem in patterns)
 
     scripture_reference_list = []
-    for i in range(len(conference_talk_df['Talks'])):
-    # for i in range(10):
+    # for i in range(len(conference_talk_df['Talks'])):
+    for i in range(10):
         match = re.findall(scripture_regex, conference_talk_df['Talks'].iloc[i])
         scripture_reference_list.append([(''.join(list(x for x in _ if x))) for _ in match])
 
@@ -88,9 +93,11 @@ def get_scripture_ref():
                          data=[elem for elem in scripture_reference_list])
     print(sr_df.info())
     print(sr_df.head())
-    sr_df.to_csv('scripture_references.csv')
+    # sr_df.to_csv('scripture_references.csv')
+
 
 if __name__ == '__main__':
     # world_history_process()
     conference_talk_process()
     get_scripture_ref()
+    load_doctrine_and_covenants()
