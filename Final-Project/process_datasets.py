@@ -1,25 +1,34 @@
 import sys
 import pandas as pd
 import datetime as dt
-from better_profanity import profanity
 import re
+import requests
+
 
 
 # Additional transfomrations to datasets for final project
 def load_doctrine_and_covenants():
+    # triple_combo_df = pd.read_json(
+    #     '/home/ramsey/PycharmProjects/DSC-540-Data-Preparation/Final-Project/lds-scriptures-json.txt'
+    # )
+
     triple_combo_df = pd.read_json(
-        '/home/ramsey/PycharmProjects/DSC-540-Data-Preparation/Final-Project/lds-scriptures-json.txt'
+        'C:\\Users\\Ramsey\\VSCodeProjects\\DSC-540-Data-Preparation\\Final-Project\\lds-scriptures-json.txt'
     )
+
     print(triple_combo_df.info())
+
+    doc_and_cov_df = triple_combo_df[triple_combo_df['volume_title'] == 'Doctrine and Covenants'].copy()
+    print(doc_and_cov_df.info())
 
 
 def world_history_process():
-    # world_history_df = pd.read_csv(
-    #     'C:\\Users\\Ramsey\\VSCodeProjects\\DSC-540-Data-Preparation\\Final-Project\\world_history_project.csv')
-    #
     world_history_df = pd.read_csv(
-        '/home/ramsey/PycharmProjects/DSC-540-Data-Preparation/Final-Project/world_history_project.csv'
-    )
+        'C:\\Users\\Ramsey\\VSCodeProjects\\DSC-540-Data-Preparation\\Final-Project\\world_history_project.csv')
+    
+    # world_history_df = pd.read_csv(
+    #     '/home/ramsey/PycharmProjects/DSC-540-Data-Preparation/Final-Project/world_history_project.csv'
+    # )
 
     # strip '... Read More' from each line
     world_history_df['Headline'] = world_history_df['Headline'].str.replace('... Read more', '', regex=False)
@@ -45,8 +54,11 @@ def world_history_process():
 
 
 conference_talk_df = pd.read_csv(
-    '/home/ramsey/PycharmProjects/DSC-540-Data-Preparation/all_talks.csv'
+    'all_talks.csv'
 )
+# conference_talk_df = pd.read_csv(
+#     '/home/ramsey/PycharmProjects/DSC-540-Data-Preparation/all_talks.csv'
+# )
 
 
 def conference_talk_process():
@@ -81,19 +93,43 @@ def get_scripture_ref():
     scripture_regex = ''.join(elem for elem in patterns)
 
     scripture_reference_list = []
-    # for i in range(len(conference_talk_df['Talks'])):
-    for i in range(10):
+    for i in range(len(conference_talk_df['Talks'])):
+    # for i in range(10):
         match = re.findall(scripture_regex, conference_talk_df['Talks'].iloc[i])
         scripture_reference_list.append([(''.join(list(x for x in _ if x))) for _ in match])
-
+        scripture_reference_list[i] = list(set(scripture_reference_list[i]))
     scripture_reference_list = ['; '.join(y) for y in scripture_reference_list if y]
 
-    print(scripture_reference_list)
     sr_df = pd.DataFrame(columns=['scripture_references'],
                          data=[elem for elem in scripture_reference_list])
-    print(sr_df.info())
-    print(sr_df.head())
+    # print(scripture_reference_list[97])
+    # print(sr_df.info())
+    # print(sr_df.head())
     # sr_df.to_csv('scripture_references.csv')
+
+
+    api_nephi_query = "https://api.nephi.org/scriptures/?q="
+
+    json_data = []
+    api_df =  pd.DataFrame(columns=['scripture', 'book', 'chapter', 'verse', 'text'])
+    for j in range(len(scripture_reference_list)): # ENTIRE DATASET
+    # for j in range(10): # TO MAKE SURE CODE WORKS
+        print(j)
+        try:
+            the_request = requests.get(api_nephi_query+scripture_reference_list[j]).json()
+            if not the_request['scriptures']:
+                continue
+            else:
+                json_data.append(the_request)
+        except ValueError:
+                json_data.append([{'scripture': 'no data found', 'book': 'no data found', 'chapter': 0, 'verse': 0, 'text': 'no data found'}])
+    for i in range(len(json_data)):
+        for k in range(len(json_data[i]['scriptures'])):
+            api_df = api_df.append(json_data[i]['scriptures'][k], ignore_index=True)
+
+    print(api_df.info())
+    print(api_df.head(20))
+    api_df.to_csv('api.csv')
 
 
 if __name__ == '__main__':
