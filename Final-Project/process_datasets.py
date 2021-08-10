@@ -113,7 +113,7 @@ def get_scripture_ref():
     json_data = []
     api_df =  pd.DataFrame(columns=['scripture', 'book', 'chapter', 'verse', 'text'])
     for j in range(len(scripture_reference_list)): # ENTIRE DATASET
-    # for j in range(10): # TO MAKE SURE CODE WORKS
+    # for j in range(100): # TO MAKE SURE CODE WORKS
         print(j)
         try:
             the_request = requests.get(api_nephi_query+scripture_reference_list[j]).json()
@@ -122,13 +122,19 @@ def get_scripture_ref():
             else:
                 json_data.append(the_request)
         except ValueError:
-                json_data.append([{'scripture': 'no data found', 'book': 'no data found', 'chapter': 0, 'verse': 0, 'text': 'no data found'}])
+                json_data.append({'api': {'q': 'NO DATA FOUND', 'format': 'json'},
+                'scriptures': [{'scripture': 'NO DATA FOUND', 'book': 'NO DATA FOUND', 
+                'chapter': 0, 'verse': 0, 'text': 'NO DATA FOUND'}]}
+                )
+        # finally:
+        #     print(json_data[j])
     for i in range(len(json_data)):
+        # print(i, type(i))
         for k in range(len(json_data[i]['scriptures'])):
             api_df = api_df.append(json_data[i]['scriptures'][k], ignore_index=True)
 
-    print(api_df.info())
-    print(api_df.head(20))
+    # print(api_df.info())
+    # print(api_df.head(20))
     api_df.to_csv('api.csv')
 
 
