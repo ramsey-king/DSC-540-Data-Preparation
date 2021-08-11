@@ -117,8 +117,8 @@ def conference_talk_process():
     month_pattern = re.compile('\d{4} (Annual)')
     title_pattern = re.compile('^(.*?)\(')
 
-    # conference_talk_df = pd.read_csv(
-    #     'C:\\Users\\Ramsey\\VSCodeProjects\\DSC-540-Data-Preparation\\all_talks.csv')
+    conference_talk_df = pd.read_csv(
+        'C:\\Users\\Ramsey\\VSCodeProjects\\DSC-540-Data-Preparation\\all_talks.csv')
 
     # Get the speaker from the list column
     conference_talk_df['Speaker'] = conference_talk_df.List.str.extract(speaker_pattern, expand=True)
@@ -131,7 +131,11 @@ def conference_talk_process():
 
     # Put the talk title into a column
     conference_talk_df['Title'] = conference_talk_df.List.str.extract(title_pattern, expand=True)
-
+    # conference_talk_df.to_csv('talks_with_years.csv')
+    conf_talk_wide_df = conference_talk_df.pivot_table(index=['Year'], values='Talks', aggfunc=lambda x : ' '.join(x))
+    print(len(conf_talk_wide_df['Talks']))
+    conf_talk_wide_df.to_csv('talks_in_wide_format.csv')
+    
     return conference_talk_df
 
 
@@ -191,7 +195,7 @@ def get_themes():
     pass
 
 if __name__ == '__main__':
-    world_history_process()
-    # conference_talk_process()
+    # world_history_process()
+    conference_talk_process()
     # get_scripture_ref(conference_talk_process())
     # load_doctrine_and_covenants()
