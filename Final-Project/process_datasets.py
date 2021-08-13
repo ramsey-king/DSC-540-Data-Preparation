@@ -87,6 +87,10 @@ def world_history_process():
 
     # print(world_history_df['Headline'].head())
 
+    world_history_wide_df = world_history_df.pivot_table(index=['Year'], values='Headline', aggfunc=lambda x: ' '.join(x))
+    world_history_wide_df.to_csv('Final-Project\\world_history_project_wide_format.csv')
+    print(world_history_wide_df.head())
+    '''
     test_year_list = []
     
     for i in range(len(world_history_df[world_history_df['Year']==1999])):
@@ -97,12 +101,14 @@ def world_history_process():
     test_tokens = word_tokenize(test_year_list)
     # print(test_tokens)
     # print(len(test_tokens))
-
+    '''
+    '''
+    # to be used at a later time when the datasets are tied together in SQL
     fdist = FreqDist()
     for word in test_tokens:
         fdist[word.lower()]+=1
     print(fdist.most_common(250))
-
+    '''
 conference_talk_df = pd.read_csv(
     'all_talks.csv'
 )
@@ -134,7 +140,7 @@ def conference_talk_process():
     # conference_talk_df.to_csv('talks_with_years.csv')
     conf_talk_wide_df = conference_talk_df.pivot_table(index=['Year'], values='Talks', aggfunc=lambda x : ' '.join(x))
     print(len(conf_talk_wide_df['Talks']))
-    conf_talk_wide_df.to_csv('talks_in_wide_format.csv')
+    conf_talk_wide_df.to_csv('Final-Project\\talks_in_wide_format.csv')
     
     return conference_talk_df
 
@@ -157,10 +163,13 @@ def get_scripture_ref(df):
     scripture_reference_list = ['; '.join(y) for y in scripture_reference_list if y]
     
     sr_df = pd.DataFrame({'year':scripture_year, 'scripture_references':[elem for elem in scripture_reference_list]})
-
+    sr_wide_df = sr_df.pivot_table(index=['year'], values='scripture_references', aggfunc=lambda x: ' '.join(x))
+    sr_wide_df.to_csv('Final-Project\\sr_wide_format.csv')
+    print(sr_wide_df.info())
+    print(sr_wide_df.head(10))
     # print(sr_df.head(10))
     # print(sr_df.shape)
-    sr_df.to_csv('scripture_references.csv')
+    # sr_df.to_csv('scripture_references.csv')
 
     '''
     api_nephi_query = "https://api.nephi.org/scriptures/?q="
@@ -195,7 +204,7 @@ def get_themes():
     pass
 
 if __name__ == '__main__':
-    # world_history_process()
-    conference_talk_process()
-    # get_scripture_ref(conference_talk_process())
+    world_history_process()
+    # conference_talk_process()
+    get_scripture_ref(conference_talk_process())
     # load_doctrine_and_covenants()
