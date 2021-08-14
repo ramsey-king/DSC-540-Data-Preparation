@@ -90,7 +90,7 @@ def world_history_process():
 
 
 conference_talk_df = pd.read_csv(
-    '/home/ramsey/PycharmProjects/DSC-540-Data-Preparation/all_talks.csv'
+    '/Final-Project/all_talks.csv'
 )
 
 
@@ -104,7 +104,7 @@ def conference_talk_process():
     #     'C:\\Users\\Ramsey\\VSCodeProjects\\DSC-540-Data-Preparation\\all_talks.csv')
 
     conference_talk_df = pd.read_csv(
-        '/home/ramsey/PycharmProjects/DSC-540-Data-Preparation/all_talks.csv'
+        '/Final-Project/all_talks.csv'
     )
 
     # Get the speaker from the list column
