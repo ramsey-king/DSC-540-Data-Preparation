@@ -1,11 +1,6 @@
-import sys
 import pandas as pd
-import datetime as dt
 import re
 import requests
-from nltk.tokenize import word_tokenize
-from nltk.probability import FreqDist
-from nltk.util import bigrams, trigrams, ngrams
 
 
 # Additional transfomrations to datasets for final project
@@ -25,8 +20,7 @@ def load_doctrine_and_covenants():
     print(doc_and_cov_df.head())
     dc_regex = '(\w+&\w+ \d+\:\d+)|(Doctrine and Covenants \d+\:\d+)|'
     scripture_reference_list = []
-    # for i in range(len(conference_talk_df['Talks'])):
-    for i in range(10):
+    for i in range(len(conference_talk_df['Talks'])):
         match = re.findall(dc_regex, conference_talk_df['Talks'].iloc[i])
         scripture_reference_list.append([(''.join(list(x for x in _ if x))) for _ in match])
         scripture_reference_list[i] = list(set(scripture_reference_list[i]))
@@ -80,47 +74,24 @@ def world_history_process():
     world_history_df['Date'] = pd.to_datetime(world_history_df['Date'])
     world_history_df['Year'] = world_history_df['Date'].dt.year
 
-    # print(world_history_df.shape)
-
     # drop years earlier than 1960
     world_history_df.drop(world_history_df[world_history_df['Year'] <= 1959].index, inplace=True)
 
     world_history_df['Month'] = world_history_df['Date'].dt.month
     world_history_df['Year_Month'] = world_history_df['Date'].dt.to_period('M')
-    # world_history_df.to_csv('world_history_project.csv')
+    world_history_df.to_csv('world_history_project.csv')
 
     # print(world_history_df['Headline'].head())
 
     world_history_wide_df = world_history_df.pivot_table(index=['Year'], values='Headline',
                                                          aggfunc=lambda x: '; '.join(x))
     world_history_wide_df.to_csv('Final-Project\\world_history_project_wide_format.csv')
-    print(world_history_wide_df.head())
-    '''
-    test_year_list = []
-    
-    for i in range(len(world_history_df[world_history_df['Year']==1999])):
-        test_year_list.append(world_history_df[world_history_df['Year']==1999].iloc[i,3])
-    
-    test_year_list = [i for item in test_year_list for i in item.split()]
-    test_year_list = ' '.join(test_year_list)
-    test_tokens = word_tokenize(test_year_list)
-    # print(test_tokens)
-    # print(len(test_tokens))
-    '''
-    '''
-    # to be used at a later time when the datasets are tied together in SQL
-    fdist = FreqDist()
-    for word in test_tokens:
-        fdist[word.lower()]+=1
-    print(fdist.most_common(250))
-    '''
+    # print(world_history_wide_df.head())
 
 
 conference_talk_df = pd.read_csv(
     '/home/ramsey/PycharmProjects/DSC-540-Data-Preparation/all_talks.csv'
 )
-
-
 
 
 def conference_talk_process():
@@ -147,9 +118,8 @@ def conference_talk_process():
 
     # Put the talk title into a column
     conference_talk_df['Title'] = conference_talk_df.List.str.extract(title_pattern, expand=True)
-    # conference_talk_df.to_csv('talks_with_years.csv')
+    conference_talk_df.to_csv('talks_with_years.csv')
     conf_talk_wide_df = conference_talk_df.pivot_table(index=['Year'], values='Talks', aggfunc=lambda x: '; '.join(x))
-    print(len(conf_talk_wide_df['Talks']))
     conf_talk_wide_df.to_csv('Final-Project\\talks_in_wide_format.csv')
 
     return conference_talk_df
@@ -164,7 +134,6 @@ def get_scripture_ref(df):
     scripture_year = []
     scripture_reference_list = []
     for i in range(len(conference_talk_df['Talks'])):
-        # for i in range(10):
         match = re.findall(scripture_regex, df['Talks'].iloc[i])
         scripture_reference_list.append([(''.join(list(x for x in _ if x))) for _ in match])
         scripture_reference_list[i] = list(set(scripture_reference_list[i]))
@@ -175,43 +144,33 @@ def get_scripture_ref(df):
     sr_df = pd.DataFrame({'year': scripture_year, 'scripture_references': [elem for elem in scripture_reference_list]})
     sr_wide_df = sr_df.pivot_table(index=['year'], values='scripture_references', aggfunc=lambda x: ' '.join(x))
     sr_wide_df.to_csv('Final-Project\\sr_wide_format.csv')
-    print(sr_wide_df.info())
-    print(sr_wide_df.head(10))
-    # print(sr_df.head(10))
-    # print(sr_df.shape)
-    # sr_df.to_csv('scripture_references.csv')
 
-    '''
+    sr_df.to_csv('scripture_references.csv')
+
     api_nephi_query = "https://api.nephi.org/scriptures/?q="
 
     json_data = []
-    api_df =  pd.DataFrame(columns=['scripture', 'book', 'chapter', 'verse', 'text'])
-    for j in range(len(scripture_reference_list)): # ENTIRE DATASET
-    # for j in range(100): # TO MAKE SURE CODE WORKS
-        # print(j)
+    api_df = pd.DataFrame(columns=['scripture', 'book', 'chapter', 'verse', 'text'])
+    for j in range(len(scripture_reference_list)):  # ENTIRE DATASET
         try:
-            the_request = requests.get(api_nephi_query+scripture_reference_list[j]).json()
+            the_request = requests.get(api_nephi_query + scripture_reference_list[j]).json()
             if not the_request['scriptures']:
                 continue
             else:
                 json_data.append(the_request)
         except ValueError:
-                json_data.append({'api': {'q': 'NO DATA FOUND', 'format': 'json'},
-                'scriptures': [{'scripture': 'NO DATA FOUND', 'book': 'NO DATA FOUND', 
-                'chapter': 0, 'verse': 0, 'text': 'NO DATA FOUND'}]}
-                )
+            json_data.append({'api': {'q': 'NO DATA FOUND', 'format': 'json'},
+                              'scriptures': [{'scripture': 'NO DATA FOUND', 'book': 'NO DATA FOUND',
+                                              'chapter': 0, 'verse': 0, 'text': 'NO DATA FOUND'}]}
+                             )
     for i in range(len(json_data)):
         for k in range(len(json_data[i]['scriptures'])):
             api_df = api_df.append(json_data[i]['scriptures'][k], ignore_index=True)
 
-    # print(api_df.info())
-    # print(api_df.head(20))
-    # api_df.to_csv('api.csv')
-    '''
+    api_df.to_csv('api.csv')
 
 
 if __name__ == '__main__':
     world_history_process()
-    # conference_talk_process()
     get_scripture_ref(conference_talk_process())
-    # load_doctrine_and_covenants()
+    load_doctrine_and_covenants()
