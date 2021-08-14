@@ -7,6 +7,7 @@ from nltk.tokenize import word_tokenize
 from nltk.probability import FreqDist
 from nltk.util import bigrams, trigrams, ngrams
 
+
 # Additional transfomrations to datasets for final project
 def load_doctrine_and_covenants():
     # triple_combo_df = pd.read_json(
@@ -32,34 +33,37 @@ def load_doctrine_and_covenants():
 
     for i in range(len(scripture_reference_list)):
         scripture_reference_list[i] = [y for y in scripture_reference_list[i] if y]
-            
-    scripture_reference_list = [y for y in scripture_reference_list if y] 
+
+    scripture_reference_list = [y for y in scripture_reference_list if y]
 
     print(scripture_reference_list[0][0])
     print(scripture_reference_list[0][1])
     print(scripture_reference_list)
-    
-    dc_talk_ref_df = pd.DataFrame(columns=['volume_title', 'book_title', 'book_short_title', 
-    'chapter_number','verse_number','verse_title', 'verse_short_title', 'scripture_text']
-    )
+
+    dc_talk_ref_df = pd.DataFrame(columns=['volume_title', 'book_title', 'book_short_title',
+                                           'chapter_number', 'verse_number', 'verse_title', 'verse_short_title',
+                                           'scripture_text']
+                                  )
 
     for i in range(len(scripture_reference_list)):
         for j in range(len(scripture_reference_list[i])):
             if len(scripture_reference_list[i][j]) > 11:
-                dc_talk_ref_df = dc_talk_ref_df.append(doc_and_cov_df[doc_and_cov_df['verse_title'] == scripture_reference_list[i][j]])
+                dc_talk_ref_df = dc_talk_ref_df.append(
+                    doc_and_cov_df[doc_and_cov_df['verse_title'] == scripture_reference_list[i][j]])
             else:
-                dc_talk_ref_df = dc_talk_ref_df.append(doc_and_cov_df[doc_and_cov_df['verse_title'] == scripture_reference_list[i][j]])
-    
+                dc_talk_ref_df = dc_talk_ref_df.append(
+                    doc_and_cov_df[doc_and_cov_df['verse_title'] == scripture_reference_list[i][j]])
+
     print(dc_talk_ref_df)
 
 
 def world_history_process():
-    world_history_df = pd.read_csv(
-        'C:\\Users\\Ramsey\\VSCodeProjects\\DSC-540-Data-Preparation\\Final-Project\\world_history_project.csv')
-    
     # world_history_df = pd.read_csv(
-    #     '/home/ramsey/PycharmProjects/DSC-540-Data-Preparation/Final-Project/world_history_project.csv'
-    # )
+    #     'C:\\Users\\Ramsey\\VSCodeProjects\\DSC-540-Data-Preparation\\Final-Project\\world_history_project.csv')
+
+    world_history_df = pd.read_csv(
+        '/home/ramsey/PycharmProjects/DSC-540-Data-Preparation/Final-Project/world_history_project.csv'
+    )
 
     # strip '... Read more' from each line
     world_history_df['Headline'] = world_history_df['Headline'].str.replace('... Read more', '', regex=False)
@@ -87,7 +91,8 @@ def world_history_process():
 
     # print(world_history_df['Headline'].head())
 
-    world_history_wide_df = world_history_df.pivot_table(index=['Year'], values='Headline', aggfunc=lambda x: ' '.join(x))
+    world_history_wide_df = world_history_df.pivot_table(index=['Year'], values='Headline',
+                                                         aggfunc=lambda x: '; '.join(x))
     world_history_wide_df.to_csv('Final-Project\\world_history_project_wide_format.csv')
     print(world_history_wide_df.head())
     '''
@@ -109,12 +114,13 @@ def world_history_process():
         fdist[word.lower()]+=1
     print(fdist.most_common(250))
     '''
+
+
 conference_talk_df = pd.read_csv(
-    'all_talks.csv'
+    '/home/ramsey/PycharmProjects/DSC-540-Data-Preparation/all_talks.csv'
 )
-# conference_talk_df = pd.read_csv(
-#     '/home/ramsey/PycharmProjects/DSC-540-Data-Preparation/all_talks.csv'
-# )
+
+
 
 
 def conference_talk_process():
@@ -123,8 +129,12 @@ def conference_talk_process():
     month_pattern = re.compile('\d{4} (Annual)')
     title_pattern = re.compile('^(.*?)\(')
 
+    # conference_talk_df = pd.read_csv(
+    #     'C:\\Users\\Ramsey\\VSCodeProjects\\DSC-540-Data-Preparation\\all_talks.csv')
+
     conference_talk_df = pd.read_csv(
-        'C:\\Users\\Ramsey\\VSCodeProjects\\DSC-540-Data-Preparation\\all_talks.csv')
+        '/home/ramsey/PycharmProjects/DSC-540-Data-Preparation/all_talks.csv'
+    )
 
     # Get the speaker from the list column
     conference_talk_df['Speaker'] = conference_talk_df.List.str.extract(speaker_pattern, expand=True)
@@ -138,10 +148,10 @@ def conference_talk_process():
     # Put the talk title into a column
     conference_talk_df['Title'] = conference_talk_df.List.str.extract(title_pattern, expand=True)
     # conference_talk_df.to_csv('talks_with_years.csv')
-    conf_talk_wide_df = conference_talk_df.pivot_table(index=['Year'], values='Talks', aggfunc=lambda x : ' '.join(x))
+    conf_talk_wide_df = conference_talk_df.pivot_table(index=['Year'], values='Talks', aggfunc=lambda x: '; '.join(x))
     print(len(conf_talk_wide_df['Talks']))
     conf_talk_wide_df.to_csv('Final-Project\\talks_in_wide_format.csv')
-    
+
     return conference_talk_df
 
 
@@ -154,15 +164,15 @@ def get_scripture_ref(df):
     scripture_year = []
     scripture_reference_list = []
     for i in range(len(conference_talk_df['Talks'])):
-    # for i in range(10):
+        # for i in range(10):
         match = re.findall(scripture_regex, df['Talks'].iloc[i])
         scripture_reference_list.append([(''.join(list(x for x in _ if x))) for _ in match])
         scripture_reference_list[i] = list(set(scripture_reference_list[i]))
         if len(scripture_reference_list[i]):
             scripture_year.append(df['Year'].iloc[i])
     scripture_reference_list = ['; '.join(y) for y in scripture_reference_list if y]
-    
-    sr_df = pd.DataFrame({'year':scripture_year, 'scripture_references':[elem for elem in scripture_reference_list]})
+
+    sr_df = pd.DataFrame({'year': scripture_year, 'scripture_references': [elem for elem in scripture_reference_list]})
     sr_wide_df = sr_df.pivot_table(index=['year'], values='scripture_references', aggfunc=lambda x: ' '.join(x))
     sr_wide_df.to_csv('Final-Project\\sr_wide_format.csv')
     print(sr_wide_df.info())
@@ -199,9 +209,6 @@ def get_scripture_ref(df):
     # api_df.to_csv('api.csv')
     '''
 
-
-def get_themes():
-    pass
 
 if __name__ == '__main__':
     world_history_process()

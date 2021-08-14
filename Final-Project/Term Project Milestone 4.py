@@ -2,6 +2,7 @@ import pandas as pd
 import re
 import requests
 
+
 talk_data = pd.read_csv('C:\\Users\\Ramsey\\VSCodeProjects\\DSC-540-Data-Preparation\\Final-Project\\talk_info2.csv', sep=",")
 
 scripture_regex = '(\d+ \w+ \d+\:\d+\-\d+)|(\w+ \d+\:\d+)|(\d+ \w+ \d+\:\d+)|(\w+&\w+ \d+\:\d+)|(\w+\. \d+\:\d+\-\d+)'
